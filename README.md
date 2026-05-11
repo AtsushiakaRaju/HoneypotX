@@ -103,6 +103,16 @@ HoneypotX/
 
 ---
 
+## Screenshots
+
+### Analyst Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Fake Admin Portal (Honeypot Trap)
+![Fake Login](screenshots/admin.png)
+
+---
+
 ## Security Concepts Demonstrated
 
 - **Deception technology** and honeypot architecture
