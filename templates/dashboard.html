@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Honeypot Alert Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #080b12;
+            font-family: 'Courier New', monospace;
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #1e2936;
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            color: #00ff88;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header-left p {
+            font-size: 11px;
+            color: #4a5568;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .live-badge {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.1;
+            }
+        }
+
+        /* Stats row */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #1e2936;
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-card.total .stat-value {
+            color: #e2e8f0;
+        }
+
+        .stat-card.critical .stat-value {
+            color: #f87171;
+        }
+
+        .stat-card.high .stat-value {
+            color: #fb923c;
+        }
+
+        .stat-card.low .stat-value {
+            color: #4ade80;
+        }
+
+        .stat-card.ips .stat-value {
+            color: #60a5fa;
+        }
+
+        /* Alert table */
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .table-title {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #4a5568;
+        }
+
+        .clear-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #4a5568;
+            border-bottom: 1px solid #1e2936;
+        }
+
+        td {
+            padding: 12px 14px;
+            font-size: 12px;
+            border-bottom: 1px solid #0d1117;
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background: #0d1117;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .badge.CRITICAL {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .badge.HIGH {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+            border: 1px solid rgba(251, 146, 60, 0.3);
+        }
+
+        .badge.MEDIUM {
+            background: rgba(250, 204, 21, 0.15);
+            color: #facc15;
+            border: 1px solid rgba(250, 204, 21, 0.3);
+        }
+
+        .badge.LOW {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .event-type {
+            color: #60a5fa;
+            font-size: 11px;
+        }
+
+        .ip-addr {
+            color: #c084fc;
+        }
+
+        .timestamp {
+            color: #4a5568;
+            font-size: 11px;
+        }
+
+        .details {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #2d3748;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        /* Auto-refresh notice */
+        .refresh-note {
+            text-align: right;
+            font-size: 10px;
+            color: #2d3748;
+            margin-top: 16px;
+            letter-spacing: 1px;
+        }
+    </style>
+    <!-- Auto-refresh every 5 seconds so you see new alerts live during demo -->
+    <meta http-equiv="refresh" content="5">
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <h1>🕵️ Honeypot Alert Dashboard</h1>
+            <p>DECEPTION-BASED INTRUSION DETECTION SYSTEM · ALL INTERACTIONS LOGGED</p>
+        </div>
+        <div class="live-badge">
+            <div class="dot"></div> MONITORING ACTIVE
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-label">Total Alerts</div>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+        <div class="stat-card critical">
+            <div class="stat-label">Critical</div>
+            <div class="stat-value">{{ stats.critical }}</div>
+        </div>
+        <div class="stat-card high">
+            <div class="stat-label">High</div>
+            <div class="stat-value">{{ stats.high }}</div>
+        </div>
+        <div class="stat-card low">
+            <div class="stat-label">Low</div>
+            <div class="stat-value">{{ stats.low }}</div>
+        </div>
+        <div class="stat-card ips">
+            <div class="stat-label">Unique IPs</div>
+            <div class="stat-value">{{ stats.unique_ips }}</div>
+        </div>
+    </div>
+
+    <!-- Alert Table -->
+    <div class="table-header">
+        <div class="table-title">⚡ Intrusion Attempts Log</div>
+        <a href="/clear" class="clear-btn" onclick="return confirm('Clear all alerts?')">[ CLEAR LOG ]</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Severity</th>
+                <th>Event Type</th>
+                <th>Source IP</th>
+                <th>Timestamp</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if alerts %}
+            {% for alert in alerts %}
+            <tr>
+                <td style="color:#4a5568">{{ alert.id }}</td>
+                <td><span class="badge {{ alert.severity }}">{{ alert.severity }}</span></td>
+                <td class="event-type">{{ alert.event_type }}</td>
+                <td class="ip-addr">{{ alert.source_ip }}</td>
+                <td class="timestamp">{{ alert.timestamp[:19].replace('T', ' ') }}</td>
+                <td class="details">{{ alert.details }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <div class="empty-icon">🟢</div>
+                        No intrusions detected yet.<br>Visit /admin to trigger the honeypot.
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="refresh-note">Auto-refreshes every 5 seconds</div>
+
+</body>
+
+</html>
